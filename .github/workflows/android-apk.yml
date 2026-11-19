@@ -24,6 +24,9 @@ jobs:
       - name: Generate Android project files
         run: flutter create --platforms=android --org com.mediamaster --project-name media_master .
 
+      - name: Remove generated template test
+        run: rm -f test/widget_test.dart
+
       - name: Install dependencies
         run: flutter pub get
 
