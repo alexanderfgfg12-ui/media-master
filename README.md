@@ -1,28 +1,17 @@
 # Media Master
 
-Media Master is an Android-first Flutter app with a deliberately small scope:
+Media Master is a free Android music player with a narrowly scoped link downloader.
 
-1. **Music player** — play audio files stored locally on the device, with background playback planned.
-2. **Link-based media downloader and converter** — enter an internet URL, select an output format, and download/convert content only when the source permits it and the user has the necessary rights.
+## Included
+- Select audio files on the device and play them as a queue.
+- Background playback and Android media notification controls.
+- Download a directly addressable HTTPS media file when the source permits it, using Android's save-file picker.
+- No account, database, backend, cloud storage, photo gallery, image tools, video gallery, or general file manager.
 
-## Explicitly out of scope
+## Important source limitations
+This build downloads direct file URLs only. A YouTube, TikTok, Instagram, or other platform watch-page URL is not a direct media file URL and is not supported by this downloader. The app does not bypass DRM, platform restrictions, paywalls, or private-content protections.
 
-- Photo gallery, image tools, or photo downloading.
-- Downloading personal videos from the device.
-- General-purpose file manager.
-- Bypassing DRM, paywalls, access controls, platform restrictions, or private-content protections.
-- Accounts, a backend server, or a database.
-
-## Current development status
-
-The current commit updates the app's navigation and screens to reflect the agreed scope. The link field currently performs only basic URL syntax validation; it does **not** download or convert media yet. The music screen is currently a UI placeholder; local audio selection and playback are not implemented yet.
-
-The next development stages are:
-- Add local audio file selection and playback, then test background playback.
-- Add source-specific, permitted URL handling; do not promise universal support for every social platform.
-- Add on-device media conversion and verify output files on Android.
-- Build and test a release APK before calling the app ready.
+This initial release does not transcode between formats or extract audio from arbitrary platform pages. Those capabilities require a compatible, legally authorized source and a local conversion engine; they must not be advertised until implemented and tested.
 
 ## Build
-
-The GitHub Actions workflow `.github/workflows/android-apk.yml` builds a release APK on pushes to `main` and uploads it as the `media-master-android-apk` artifact when the build succeeds.
+GitHub Actions builds both a release APK (for direct distribution) and an Android App Bundle (AAB) for Google Play. The workflow artifact is available for 14 days after a successful run.
