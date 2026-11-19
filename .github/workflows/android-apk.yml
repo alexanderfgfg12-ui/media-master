@@ -24,6 +24,53 @@ jobs:
       - name: Generate Android project files
         run: flutter create --platforms=android --org com.mediamaster --project-name media_master .
 
+      - name: Configure release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64 repository secret}"
+          : "${ANDROID_KEYSTORE_PASSWORD:?Missing ANDROID_KEYSTORE_PASSWORD repository secret}"
+          : "${ANDROID_KEY_ALIAS:?Missing ANDROID_KEY_ALIAS repository secret}"
+          : "${ANDROID_KEY_PASSWORD:?Missing ANDROID_KEY_PASSWORD repository secret}"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle.kts")
+          s = p.read_text()
+          if "import java.util.Properties" not in s:
+              s = "import java.util.Properties\\nimport java.io.FileInputStream\\n\\n" + s
+          if "val keystoreProperties =" not in s:
+              s = re.sub(r"(plugins\\s*\\{.*?\\}\\s*)", r'\\1\\nval keystoreProperties = Properties()\\nval keystorePropertiesFile = rootProject.file("key.properties")\\nkeystoreProperties.load(FileInputStream(keystorePropertiesFile))\\n', s, count=1, flags=re.S)
+          s = re.sub(r"    buildTypes\\s*\\{\\s*release\\s*\\{.*?\\n    \\}", '''    signingConfigs {
+              create("release") {
+                  keyAlias = keystoreProperties["keyAlias"] as String
+                  keyPassword = keystoreProperties["keyPassword"] as String
+                  storeFile = file(keystoreProperties["storeFile"] as String)
+                  storePassword = keystoreProperties["storePassword"] as String
+              }
+          }
+
+          buildTypes {
+              release {
+                  signingConfig = signingConfigs.getByName("release")
+              }
+          }''', s, count=1, flags=re.S)
+          if 'signingConfigs.getByName("release")' not in s:
+              raise SystemExit("Could not configure release signing in build.gradle.kts")
+          p.write_text(s)
+          PY
+
       - name: Set Google Play target API level
         run: |
           python3 - <<'PY'
