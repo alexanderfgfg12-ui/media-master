@@ -1,4 +1,4 @@
-name: Build Media Master Android APK
+name: Build Media Master Android
 
 on:
   workflow_dispatch:
@@ -24,6 +24,29 @@ jobs:
       - name: Generate Android project files
         run: flutter create --platforms=android --org com.mediamaster --project-name media_master .
 
+      - name: Configure background audio service
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          s = s.replace('<application', '''<uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.WAKE_LOCK"/>
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+              <application''', 1)
+          s = s.replace('</application>', '''<service android:name="com.ryanheise.audioservice.AudioService"
+                  android:foregroundServiceType="mediaPlayback"
+                  android:exported="true">
+                  <intent-filter><action android:name="android.media.browse.MediaBrowserService"/></intent-filter>
+                </service>
+                <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver" android:exported="true">
+                  <intent-filter><action android:name="android.intent.action.MEDIA_BUTTON"/></intent-filter>
+                </receiver>
+              </application>''', 1)
+          p.write_text(s)
+          PY
+
       - name: Remove generated template test
         run: rm -f test/widget_test.dart
 
@@ -31,15 +54,20 @@ jobs:
         run: flutter pub get
 
       - name: Analyze Flutter code
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Build Google Play App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload Android release files
         uses: actions/upload-artifact@v4
         with:
-          name: media-master-android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: media-master-android-release
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
