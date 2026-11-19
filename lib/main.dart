@@ -15,22 +15,23 @@ const muted = Color(0xFF9AA7C2);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Render the first frame immediately; optional audio-service setup must
+  // never prevent the interface from appearing.
+  runApp(const MediaMasterApp());
+  _initializeBackgroundAudio();
+}
 
-  // Never block the first frame on optional background-audio setup.
-  // If Android rejects the media service configuration, keep the app usable
-  // in the foreground and report the issue in the debug log.
+Future<void> _initializeBackgroundAudio() async {
   try {
     await JustAudioBackground.init(
       androidNotificationChannelId: 'com.mediamaster.audio',
-      androidNotificationChannelName: 'Media Master Music',
+      androidNotificationChannelName: 'Music Player',
       androidNotificationOngoing: true,
     );
   } catch (error, stackTrace) {
-    debugPrint('Media Master background audio initialization failed: $error');
+    debugPrint('Background audio initialization failed: $error');
     debugPrintStack(stackTrace: stackTrace);
   }
-
-  runApp(const MediaMasterApp());
 }
 
 class MediaMasterApp extends StatelessWidget {
@@ -39,7 +40,7 @@ class MediaMasterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'Media Master',
+    title: 'Music Player & Video Downloader',
     theme: ThemeData(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: ink,
@@ -87,7 +88,7 @@ class HomeScreen extends StatelessWidget {
       const Row(children: [
         Icon(Icons.graphic_eq_rounded, color: cyan, size: 34),
         SizedBox(width: 10),
-        Text('MEDIA MASTER', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.3)),
+        Expanded(child: Text('MUSIC PLAYER & VIDEO DOWNLOADER', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: .5, fontSize: 13))),
       ]),
       const SizedBox(height: 30),
       Container(
@@ -345,7 +346,7 @@ class _Heading extends StatelessWidget {
   final String subtitle;
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    const Text('MEDIA MASTER', style: TextStyle(color: cyan, fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+    const Text('MUSIC PLAYER & VIDEO DOWNLOADER', style: TextStyle(color: cyan, fontSize: 10, letterSpacing: .5, fontWeight: FontWeight.bold)),
     const SizedBox(height: 8),
     Text(title, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900)),
     const SizedBox(height: 6),

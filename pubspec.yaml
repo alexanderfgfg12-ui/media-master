@@ -1,5 +1,5 @@
 name: media_master
-description: Media Master - local music player and permitted direct media downloader.
+description: Music Player & Video Downloader - local music player and permitted direct media downloader.
 publish_to: "none"
 version: 1.0.0+1
 

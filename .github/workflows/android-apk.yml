@@ -1,4 +1,4 @@
-name: Build Media Master Android
+name: Build Music Player & Video Downloader Android
 
 on:
   workflow_dispatch:
@@ -23,6 +23,11 @@ jobs:
 
       - name: Generate Android project files
         run: flutter create --platforms=android --org com.mediamaster --project-name media_master .
+
+      - name: Apply app name and new launcher logo
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 scripts/create_android_icons.py
 
       - name: Configure release signing
         env:
@@ -125,7 +130,7 @@ jobs:
       - name: Upload Android release files
         uses: actions/upload-artifact@v4
         with:
-          name: media-master-android-release
+          name: music-player-video-downloader-android-release
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/bundle/release/app-release.aab

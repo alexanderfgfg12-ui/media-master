@@ -1,6 +1,6 @@
-# Media Master
+# Music Player & Video Downloader
 
-Media Master is a free Android music player with a narrowly scoped link downloader.
+A free Android app with a local music player and a narrowly scoped direct-media link downloader.
 
 ## Included
 - Select audio files on the device and play them as a queue.
