@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 
 const ink = Color(0xFF17132B);
@@ -18,12 +17,6 @@ const mint = Color(0xFFB9F1DF);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // The audio service must be ready before any AudioPlayer is created.
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.mediamaster.audio',
-    androidNotificationChannelName: 'Music playback',
-    androidNotificationOngoing: true,
-  );
   runApp(const MediaMasterApp());
 }
 
@@ -201,7 +194,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       }
       setState(() { loading = true; error = null; tracks = valid; });
       final source = ConcatenatingAudioSource(children: valid.map((f) => AudioSource.uri(
-        Uri.file(f.path!), tag: MediaItem(id: f.path!, title: f.name),
+        Uri.file(f.path!),
       )).toList());
       await player.setAudioSource(source, initialIndex: 0);
       // Do not await play(): its Future completes when playback ends.
