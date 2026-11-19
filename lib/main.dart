@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:path_provider/path_provider.dart';
 
 const ink = Color(0xFF090D18);
 const panel = Color(0xFF141B2D);
@@ -208,7 +208,7 @@ class _LinkToolScreenState extends State<LinkToolScreen> {
       ]),
     ),
     const SizedBox(height: 16),
-    const Text('تنبيه: روابط صفحات YouTube وTikTok وغيرها ليست روابط ملفات مباشرة. لا يتم تجاوز قيود المنصات أو DRM.', style: TextStyle(color: cyan, height: 1.6, fontSize: 12)),
+    const Text('روابط صفحات YouTube وTikTok وغيرها ليست روابط ملفات مباشرة. لا يتم تجاوز قيود المنصات أو DRM.', style: TextStyle(color: cyan, height: 1.6, fontSize: 12)),
   ]);
 }
 
@@ -221,7 +221,6 @@ class MusicPlayerScreen extends StatefulWidget {
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   final player = AudioPlayer();
   List<PlatformFile> tracks = [];
-  int current = 0;
   bool loading = false;
 
   @override
@@ -232,7 +231,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     if (result == null) return;
     final valid = result.files.where((f) => f.path != null).toList();
     if (valid.isEmpty) return;
-    setState(() { tracks = valid; current = 0; loading = true; });
+    setState(() { tracks = valid; loading = true; });
     try {
       final sources = valid.map((f) => AudioSource.uri(
         Uri.file(f.path!),
@@ -256,7 +255,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Widget build(BuildContext context) => StreamBuilder<int?>(
     stream: player.currentIndexStream,
     builder: (context, snapshot) {
-      final selected = snapshot.data ?? current;
+      final selected = snapshot.data ?? 0;
       final title = tracks.isNotEmpty && selected < tracks.length ? tracks[selected].name : 'لا توجد أغنية';
       return ListView(padding: const EdgeInsets.all(20), children: [
         const _Heading(title: 'مشغل الموسيقى', subtitle: 'مكتبتك الصوتية على هاتفك، دون صور أو فيديو.'),
