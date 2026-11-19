@@ -24,6 +24,19 @@ jobs:
       - name: Generate Android project files
         run: flutter create --platforms=android --org com.mediamaster --project-name media_master .
 
+      - name: Set Google Play target API level
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          candidates = [Path("android/app/build.gradle.kts"), Path("android/app/build.gradle")]
+          for p in candidates:
+              if p.exists():
+                  s = p.read_text()
+                  s = s.replace("targetSdk = flutter.targetSdkVersion", "targetSdk = 36")
+                  s = s.replace("targetSdkVersion flutter.targetSdkVersion", "targetSdkVersion 36")
+                  p.write_text(s)
+          PY
+
       - name: Configure background audio service
         run: |
           python3 - <<'PY'
