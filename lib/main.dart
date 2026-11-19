@@ -15,11 +15,21 @@ const muted = Color(0xFF9AA7C2);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.mediamaster.audio',
-    androidNotificationChannelName: 'Media Master Music',
-    androidNotificationOngoing: true,
-  );
+
+  // Never block the first frame on optional background-audio setup.
+  // If Android rejects the media service configuration, keep the app usable
+  // in the foreground and report the issue in the debug log.
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.mediamaster.audio',
+      androidNotificationChannelName: 'Media Master Music',
+      androidNotificationOngoing: true,
+    );
+  } catch (error, stackTrace) {
+    debugPrint('Media Master background audio initialization failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
+
   runApp(const MediaMasterApp());
 }
 
